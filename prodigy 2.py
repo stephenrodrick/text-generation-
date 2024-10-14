@@ -43,12 +43,11 @@ def build_markov_model_word(text):
         next_word = words[i + 1]
         markov_model[current_word][next_word] += 1
 
-    # Convert counts to probabilities
+   
     for current_word, transitions in markov_model.items():
         total = sum(transitions.values())
         for next_word in transitions:
-            transitions[next_word] /= total  # Probability of next_word given current_word
-
+            transitions[next_word] /= total  
     return markov_model
 
 def generate_text_word(markov_model, start_word=None, length=50):
@@ -86,7 +85,6 @@ def generate_text_word(markov_model, start_word=None, length=50):
             generated_words.append(current_word)
             continue
 
-        # Choose the next word based on transition probabilities
         next_words = list(transitions.keys())
         probabilities = list(transitions.values())
         current_word = random.choices(next_words, weights=probabilities, k=1)[0]
@@ -103,7 +101,7 @@ def save_markov_model(markov_model, filename):
         filename (str): The filename to save the model to.
     """
     with open(filename, 'w', encoding='utf-8') as f:
-        # Convert defaultdict to regular dict for JSON serialization
+       
         model_dict = {k: dict(v) for k, v in markov_model.items()}
         json.dump(model_dict, f, ensure_ascii=False, indent=4)
 
@@ -119,14 +117,12 @@ def load_markov_model(filename):
     """
     with open(filename, 'r', encoding='utf-8') as f:
         model_dict = json.load(f)
-        # Convert back to defaultdict
+       
         markov_model = defaultdict(lambda: defaultdict(int), {k: defaultdict(int, v) for k, v in model_dict.items()})
     return markov_model
 
-# Initialize global variable for the Markov model
 markov_model_global = None
 
-# GUI Functions
 def generate():
     global markov_model_global
     training_text = text_input.get("1.0", tk.END)
@@ -143,20 +139,19 @@ def generate():
         messagebox.showerror("Error", "Training text cannot be empty.")
         return
 
-    # Preprocess the training text
+   
     training_text = preprocess_text(training_text)
 
-    # Build the word-level Markov model
     markov_model_global = build_markov_model_word(training_text)
 
-    # Generate text
+
     try:
         generated = generate_text_word(markov_model_global, start_word=start, length=length)
     except ValueError as ve:
         messagebox.showerror("Error", str(ve))
         return
 
-    # Output the generated text
+    
     text_output.delete(1.0, tk.END)
     text_output.insert(tk.END, generated)
 
@@ -180,34 +175,32 @@ def load_model_gui():
         except Exception as e:
             messagebox.showerror("Error", f"Failed to load model: {e}")
 
-# Set up the GUI
 root = tk.Tk()
 root.title("Word-Level Markov Chain Text Generator")
 
-# Training Text Input
+
 tk.Label(root, text="Training Text:").grid(row=0, column=0, padx=10, pady=10, sticky='nw')
 text_input = tk.Text(root, height=10, width=70)
 text_input.grid(row=0, column=1, columnspan=2, padx=10, pady=10)
 
-# Starting word
+
 tk.Label(root, text="Starting Word:").grid(row=1, column=0, padx=10, pady=10, sticky='e')
 entry_start = tk.Entry(root, width=50)
 entry_start.grid(row=1, column=1, padx=10, pady=10, sticky='w')
 
-# Generated length
+
 tk.Label(root, text="Generated Length (words):").grid(row=2, column=0, padx=10, pady=10, sticky='e')
 entry_length = tk.Entry(root, width=50)
 entry_length.insert(0, "50")
 entry_length.grid(row=2, column=1, padx=10, pady=10, sticky='w')
 
-# Generate button
+
 tk.Button(root, text="Generate Text", command=generate).grid(row=3, column=1, padx=10, pady=10, sticky='w')
 
-# Save and Load model buttons
+
 tk.Button(root, text="Save Model", command=save_model).grid(row=3, column=2, padx=10, pady=10, sticky='w')
 tk.Button(root, text="Load Model", command=load_model_gui).grid(row=3, column=3, padx=10, pady=10, sticky='w')
 
-# Text output
 tk.Label(root, text="Generated Text:").grid(row=4, column=0, padx=10, pady=10, sticky='nw')
 text_output = tk.Text(root, height=10, width=70)
 text_output.grid(row=4, column=1, columnspan=3, padx=10, pady=10)
